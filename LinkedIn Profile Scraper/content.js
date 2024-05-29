@@ -21,8 +21,6 @@ window.addEventListener("load", function () {
       .querySelector("span.t-black--light > span.t-bold")
       .innerText.replace(/,/g, "")
       .match(/\d+/)[0];
-
-    console.log(name, location, about, bio, followerCount, connectionCount);
     chrome.runtime.sendMessage({
       type: "profileData",
       data: {
