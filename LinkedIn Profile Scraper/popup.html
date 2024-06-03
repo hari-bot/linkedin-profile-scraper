@@ -5,9 +5,17 @@
     <link rel="stylesheet" type="text/css" href="popup.css">
 </head>
 <body>
-    <h1>LinkedIn Profile Scraper</h1>
-    <textarea id="profileLinks" placeholder="Enter LinkedIn profile links, one per line" rows="5" cols="30"></textarea>
-    <button id="scrapeProfiles">Scrape Profiles</button>
+    <h3>LinkedIn Automation</h3>
+    <label for="profileLinks">Enter LinkedIn Profile Links (one per line):</label>
+    <textarea id="profileLinks" rows="4"></textarea>
+    <button id="scrapeProfiles" disabled>Scrape Profiles</button>
+    <hr>
+    <div class="input-container">
+        <label for="interactionCount">Number of Posts to Interact With:</label>
+        <input type="number" id="interactionCount" min="1">
+        </div>
+    </div>
+    <button id="automateLikeComment" disabled>Automate Like & Comment</button>
     <div id="status"></div>
     <script src="popup.js"></script>
 </body>

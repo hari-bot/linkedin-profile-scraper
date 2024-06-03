@@ -1,34 +1,70 @@
 document.addEventListener("DOMContentLoaded", function () {
-  document
-    .getElementById("scrapeProfiles")
-    .addEventListener("click", function () {
-      const profileLinks = document
-        .getElementById("profileLinks")
-        .value.split("\n")
-        .filter((link) => link.trim() !== "");
-      if (profileLinks.length === 0) {
-        document.getElementById("status").textContent =
-          "Please enter at least one LinkedIn profile link.";
-        return;
-      }
+  const profileLinksInput = document.getElementById("profileLinks");
+  const interactionCountInput = document.getElementById("interactionCount");
+  const scrapeProfilesButton = document.getElementById("scrapeProfiles");
+  const automateLikeCommentButton = document.getElementById(
+    "automateLikeComment"
+  );
 
-      chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        const activeTab = tabs[0];
-        chrome.storage.local.set(
-          { profileLinks, currentProfileIndex: 0 },
-          function () {
-            chrome.tabs.create({ url: profileLinks[0] });
-          }
-        );
-      });
+  const updateButtonState = () => {
+    scrapeProfilesButton.disabled = !profileLinksInput.value.trim();
+    automateLikeCommentButton.disabled = !interactionCountInput.value.trim();
+  };
+
+  profileLinksInput.addEventListener("input", updateButtonState);
+  interactionCountInput.addEventListener("input", updateButtonState);
+
+  scrapeProfilesButton.addEventListener("click", function () {
+    const profileLinks = profileLinksInput.value
+      .split("\n")
+      .filter((link) => link.trim() !== "");
+
+    if (profileLinks.length === 0) {
+      document.getElementById("status").textContent =
+        "Please enter valid profile links.";
+      return;
+    }
+
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      const activeTab = tabs[0];
+      chrome.storage.local.set(
+        { profileLinks, currentProfileIndex: 0 },
+        function () {
+          chrome.tabs.create({ url: profileLinks[0] });
+        }
+      );
     });
+  });
+
+  automateLikeCommentButton.addEventListener("click", function () {
+    const interactionCount = parseInt(interactionCountInput.value, 10);
+
+    if (isNaN(interactionCount) || interactionCount <= 0) {
+      document.getElementById("status").textContent =
+        "Please enter a valid number.";
+      return;
+    }
+
+    const actions = [];
+
+    for (let i = 0; i < interactionCount; i++) {
+      actions.push({ type: "like" });
+      actions.push({ type: "comment", text: "CFBR" });
+    }
+
+    chrome.storage.local.set({ actions, actionIndex: 0 }, function () {
+      chrome.tabs.create({ url: "https://www.linkedin.com/feed/" });
+    });
+  });
 });
 
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
   if (message.type === "profileData") {
     fetch("http://localhost:3000/profiles", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(message.data),
     })
       .then((response) => response.json())
